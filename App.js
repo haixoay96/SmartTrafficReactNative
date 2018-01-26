@@ -9,17 +9,18 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Modal
 } from 'react-native';
 import MapView from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
+const origin = {latitude: 21.1096719, longitude: 105.7260039};
+const destination = {latitude: 21.2, longitude: 105.77};
+const GOOGLE_MAPS_APIKEY = 'AIzaSyCzNOXHaboNOM_cZHNl-SlUNfeK3KJa1xE';
 
-
-function km2la(km){
-  return 110.574*km
-}
-function jm2long(km){
-
-}
 export default class App extends Component<{}> {
   constructor(props){
     super(props)
@@ -31,7 +32,45 @@ export default class App extends Component<{}> {
         longitudeDelta: 0.005,
       },
       cols: [],
-      rows: []
+      rows: [],
+      listComplete:[],
+      modalVisible: false
+    }
+  }
+  search = async (text)=>{
+    let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&types=geocode&key=${GOOGLE_MAPS_APIKEY}`
+    try {
+      let result = await fetch(URL_SEARCH)
+      let data = await result.json()
+      this.setState({
+        ...this.state,
+        listComplete:data.predictions
+      })
+    }catch(e){
+
+    }
+  }
+  getLocationByID = async (place_id)=>{
+    console.log('get', place_id)
+    
+    let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${place_id}&key=${GOOGLE_MAPS_APIKEY}`
+    try{
+      let result = await fetch(URL_SEARCH)
+      let data = await result.json()
+      console.log(data)
+      let latitude = data.result.geometry.location.lat
+      let longitude = data.result.geometry.location.lng
+      this.setMain(latitude, longitude);
+      this.getCenters(latitude, longitude)
+      this.setState({
+        ...this.state,
+        listComplete:[]
+      })
+      
+      console.log('change')
+
+    }catch(e){
+
     }
   }
   componentDidMount(){
@@ -150,6 +189,17 @@ export default class App extends Component<{}> {
    // this.setState({ region });
     
   }
+  renderItem = (item)=>{
+    console.log(item)
+    return(
+      <TouchableOpacity style={styles.wrapItem} onPress={this.getLocationByID.bind(null, item.item.place_id)} >
+        <Text>
+          {item.item.description}
+        </Text>
+      </TouchableOpacity>
+    )
+
+  }
   render() {
     console.log('render')
     let top_left =  this.getTop_Left(this.state.region.latitude,this.state.region.longitude);
@@ -163,6 +213,7 @@ export default class App extends Component<{}> {
           showsMyLocationButton={true}
           showsUserLocation={true}
           initialRegion={this.state.region}
+          region={this.state.region}
           style={styles.map}
           onRegionChange={this.onRegionChange}
         >
@@ -195,7 +246,7 @@ export default class App extends Component<{}> {
             [top_left, top_right, bottom_right, bottom_left].map((item, index)=>{
               return(
                 <MapView.Marker
-                  index={index}
+                  key={index}
                   draggable
                   coordinate={{
                     latitude:item.latitude,
@@ -229,7 +280,40 @@ export default class App extends Component<{}> {
               )
             })
           }
+          <MapViewDirections
+            origin={origin}
+            destination={destination}
+            apikey={GOOGLE_MAPS_APIKEY}
+          />
         </MapView>
+        <View style={styles.wrapSearch}> 
+          <TextInput underlineColorAndroid='transparent' onChangeText={this.search} placeholder='Tìm kiếm ở đây' />
+          <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/>
+        </View>
+        <TouchableOpacity style={styles.findWay} onPress={(e)=>{
+          this.setState({
+            ...this.state,
+            modalVisible:true
+          })
+        }} > 
+          <Text>
+            findWay
+          </Text>
+        </TouchableOpacity>
+        <Modal
+          visible={this.state.modalVisible}
+          animationType={'slide'}
+          onRequestClose={(e)=>{
+            this.setState({
+              ...this.state,
+              modalVisible:false
+            })
+          }}
+        >
+          <Text>
+            Doing something!
+          </Text>
+        </Modal>
       </View>
     );
   }
@@ -240,15 +324,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5FCFF',
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  wrapSearch: {
+      position:'absolute',
+      top:0,
+      left:0,
+      right:0,
+      backgroundColor:'#ffffff',
+      margin:5
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  wrapItem:{
+    padding:5
+  },
+  findWay:{
+    position:'absolute',
+    bottom:0,
+    right:0,
+    backgroundColor:'#ffffff',
+    padding:5,
+    margin:5
   },
   map:{
     position:'absolute',
