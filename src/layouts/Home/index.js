@@ -89,11 +89,28 @@ export default class Home extends Base {
       timeout: 20000,
       maximumAge: 1000
     });
-    navigator.geolocation.watchPosition((position)=>{
-      console.log(position)
+    navigator.geolocation.watchPosition(async(position)=>{
+      console.log('Watch:',position)
+      try{
+        let result = fetch('http://localhost:3000/location', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body:JSON.stringify({
+            longitude: position.coords.longitude,
+            latitude: position.coords.latitude
+          })
+        })
+        console.log(result);
+      }catch(e){
+        console.error(e);
+      }
+      
 
     }, (error)=>{
-      console.log(error)
+      console.log('Watch:', error)
 
     })
 
