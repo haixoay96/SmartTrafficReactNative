@@ -30,13 +30,13 @@ export default class Home extends Base {
       region: {
         latitude: 21.1096719,
         longitude: 105.7260039,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
       },
-      cols: [],
-      rows: [],
       listComplete:[],
-      modalVisible: false
+      modalVisible: false,
+      locations: [],
+      squares:[]
     }
   }
   search = async (text)=>{
@@ -53,8 +53,6 @@ export default class Home extends Base {
     }
   }
   getLocationByID = async (place_id)=>{
-    console.log('get', place_id)
-    
     let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${place_id}&key=${GOOGLE_MAPS_APIKEY}`
     try{
       let result = await fetch(URL_SEARCH)
@@ -62,26 +60,56 @@ export default class Home extends Base {
       console.log(data)
       let latitude = data.result.geometry.location.lat
       let longitude = data.result.geometry.location.lng
-      this.setMain(latitude, longitude);
-      this.getCenters(latitude, longitude)
+      this.setMain({
+        latitude:latitude,
+        longitude: longitude
+      });
       this.setState({
         ...this.state,
         listComplete:[]
       })
-      
-      console.log('change')
-
     }catch(e){
 
     }
   }
+  countInBox = (box)=>{
+    let locations = this.state.locations;
+    let count = 0;
+    locations.forEach((value, index)=>{
+      if(this.isOnBox(box,value)){
+        count++
+      }
+    });
+    return count;
+  }
+  isOnBox = (box, point)=>{
+    //get box
+    let top_left = box.top_left;
+    let top_right = box.top_right;
+    let bottom_right = box.bottom_right;
+    let bottom_left = box.bottom_left;
+    //get edage
+    let top =  top_left.latitude;
+    let bottom = bottom_right.latitude;
+
+    let left = top_left.longitude;
+    let right = bottom_right.longitude;
+
+    if( point.latitude <= top && point.latitude >= bottom && point.longitude >= left && point.longitude <= right ){
+      return true;
+    }
+    return false;
+  }
   componentDidMount(){
+    this.divideSquares();
     navigator.geolocation.getCurrentPosition((position) => {
-      console.log('get current successfull', position)
+      console.log('get current successfull', position);
       let latitude = position.coords.latitude;
       let longitude = position.coords.longitude;
-      this.setMain(latitude, longitude);
-      this.getCenters(latitude, longitude)
+      this.setMain({
+        longitude:longitude,
+        latitude:latitude
+      });
     }, (error) => {
       console.log(error)
     }, {
@@ -91,8 +119,9 @@ export default class Home extends Base {
     });
     navigator.geolocation.watchPosition(async(position)=>{
       console.log('Watch:',position)
+      this.setMain(position.coords);
       try{
-        let result = fetch('http://localhost:3000/location', {
+        let result = await fetch('http://192.168.1.91:3000/location', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -103,7 +132,8 @@ export default class Home extends Base {
             latitude: position.coords.latitude
           })
         })
-        console.log(result);
+        let data = await result.json()
+        console.log(data);
       }catch(e){
         console.error(e);
       }
@@ -112,106 +142,92 @@ export default class Home extends Base {
     }, (error)=>{
       console.log('Watch:', error)
 
-    })
-
-  }
-  getCenters = (latitude, longitude)=>{
-    console.log(latitude, longitude)
-    let top_left = {
-      latitude: latitude + 0.05,
-      longitude: longitude - 0.05
-    }
-    let top_right = {
-      latitude: latitude + 0.05,
-      longitude: longitude + 0.05
-    }
-    let bottom_left = {
-      latitude: latitude - 0.05,
-      longitude: longitude - 0.05
-    }
-    let bottom_right = {
-      latitude: latitude - 0.05,
-      longitude: longitude + 0.05
-    }
-    cols = []
-    rows = []
-    for(i = 0; i < 101;i++){
-      let from = {
-        latitude: top_left.latitude,
-        longitude: top_left.longitude +i*0.001
-      };
-      let to = {
-        latitude: bottom_left.latitude,
-        longitude: bottom_left.longitude + i*0.001
-      }
-      cols.push({
-        from:from,
-        to:to
-      })
-    }
-    for(i = 0; i < 101;i++){
-      let from = {
-        latitude: top_left.latitude  - i*0.001,
-        longitude: top_left.longitude 
-      };
-      let to = {
-        latitude: top_right.latitude - i*0.001,
-        longitude: top_right.longitude 
-      }
-      cols.push({
-        from:from,
-        to:to
-      })
-    }
-    setTimeout(()=>{
+    });
+    fetch('http://192.168.1.91:3000/location').then((result)=>{
+      return result.json();
+    }).then((data)=>{
+      let locations = data.locations;
       this.setState({
-      ...this.state,
-      cols:cols,
-      rows:rows
+        ...this.state,
+        locations:locations
+      })
+    }).catch((e)=>{
+      console.log(e)
     });
 
-    },0)
-    
-
   }
-  getTop_Left =(latitude, longitude)=>{
+  getTop_Left =()=>{
+    let position = this.state.region;
     return{
-      latitude:latitude + 0.05,
-      longitude:longitude - 0.05
+      latitude: position.latitude + 0.05,
+      longitude: position.longitude - 0.05
     }
   }
-  getTop_Right= (latitude, longitude)=>{
+  getTop_Right= ()=>{
+    let position = this.state.region;
     return{
-      latitude:latitude + 0.05,
-      longitude:longitude + 0.05
+      latitude:position.latitude + 0.05,
+      longitude:position.longitude + 0.05
     }
   }
-  getBottom_Left = (latitude,longitude)=>{
+  getBottom_Left =()=>{
+    let position = this.state.region;
     return{
-      latitude:latitude - 0.05,
-      longitude:longitude - 0.05
+      latitude:position.latitude - 0.05,
+      longitude:position.longitude - 0.05
     }
   }
-  getBottom_Right = (latitude, longitude)=>{
+  getBottom_Right = ()=>{
+    let position = this.state.region;
     return{
-      latitude:latitude - 0.05,
-      longitude:longitude + 0.05
+      latitude:position.latitude - 0.05,
+      longitude:position.longitude + 0.05
     }
   }
-  setMain = (latitude, longitude)=>{
+  setMain = (position)=>{
     this.setState({
       ...this.state,
       region: {
-        latitude: latitude,
-        longitude: longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
       }
-    })
-
+    });
+  }
+  divideSquares = ()=>{
+    let point = this.getTop_Left();
+    let squares = []
+    for (i = 0; i< 10; i++){
+      for(j = 0; j< 10; j++){
+        let top_left = {
+          longitude:point.longitude + 0.01*j,
+          latitude:point.latitude - 0.01*i
+        };
+        let top_right = {
+          longitude: top_left.longitude + 0.01,
+          latitude: top_left.latitude
+        };
+        let bottom_right = {
+          longitude: top_right.longitude,
+          latitude: top_right.latitude - 0.01
+        };
+        let bottom_left = {
+          longitude: bottom_right.longitude - 0.01,
+          latitude:bottom_right.latitude
+        }
+        squares.push({
+          top_left: top_left,
+          top_right:top_right,
+          bottom_right:bottom_right,
+          bottom_left:bottom_left
+        });
+      }
+    }
+    return squares
   }
   onRegionChange=(region)=> {
-    console.log('Change', region.latitudeDelta, region.longitudeDelta)
+   // console.log('Change', region.latitudeDelta, region.longitudeDelta)
    // this.setState({ region });
     
   }
@@ -227,12 +243,11 @@ export default class Home extends Base {
 
   }
   renderContent() {
-    console.log('render')
-    let top_left =  this.getTop_Left(this.state.region.latitude,this.state.region.longitude);
-    let top_right = this.getTop_Right(this.state.region.latitude,this.state.region.longitude);
-    let bottom_right =  this.getBottom_Right(this.state.region.latitude,this.state.region.longitude);
-    let bottom_left = this.getBottom_Left(this.state.region.latitude,this.state.region.longitude);
-    console.log(top_right)
+    let top_left =  this.getTop_Left();
+    let top_right = this.getTop_Right();
+    let bottom_right =  this.getBottom_Right();
+    let bottom_left = this.getBottom_Left();
+    let squares = this.divideSquares();
     return (
       <View style={styles.container}>
         <MapView
@@ -253,8 +268,6 @@ export default class Home extends Base {
               console.log('Move', e);
               let latitude = e.nativeEvent.coordinate.latitude;
               let longitude = e.nativeEvent.coordinate.longitude;
-              this.setMain(latitude,longitude );
-              this.getCenters(latitude, longitude);
             }}
             title={'here'}
             description={'ok'}
@@ -269,48 +282,39 @@ export default class Home extends Base {
             fillColor={'#28bc1e50'}
           />
           {
-            [top_left, top_right, bottom_right, bottom_left].map((item, index)=>{
-              return(
-                <MapView.Marker
-                  key={index}
-                  draggable
-                  coordinate={{
-                    latitude:item.latitude,
-                    longitude:item.longitude
-                  }}
-                  title={'here'}
-                  description={'ok'}
-                />
-              )
-            })
-          }
-          {
-            this.state.cols.map((item, index)=>{
-              return(
-                <MapView.Polygon key={index}
-                  coordinates={[item.from, item.to]}
-                  fillColor={'#28bc1e80'}
-                />
-
-              )
-            })
-          }
-          {
-            this.state.rows.map((item, index)=>{
+            squares.map((value, index)=>{
+              let count = this.countInBox(value);
+              console.log('count', count)
               return(
                 <MapView.Polygon 
                   key={index}
-                  coordinates={[item.from, item.to]}
-                  fillColor={'#28bc1e80'}
+                  coordinates={[
+                      value.top_left,
+                      value.top_right,
+                      value.bottom_right,
+                      value.bottom_left
+                  ]}
+
+                  fillColor={`rgb(${count}, ${255-count}, 0)`}
                 />
               )
             })
           }
-          <MapViewDirections
-            origin={origin}
-            destination={destination}
-            apikey={GOOGLE_MAPS_APIKEY}
-          />
+          {/* {
+            this.state.locations.map((value, index)=>{
+              return(
+                <MapView.Marker
+                  key={index}
+                  coordinate={{
+                    latitude:value.latitude,
+                    longitude: value.longitude
+                  }}
+                  title={'here'}
+                  description={'ok'}
+              />
+              )
+            })
+          } */}
         </MapView>
         <View style={styles.wrapSearch}> 
           <TextInput style={{
