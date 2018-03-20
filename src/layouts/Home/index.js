@@ -119,6 +119,7 @@ export default class Home extends Base {
     });
     navigator.geolocation.watchPosition(async(position)=>{
       console.log('Watch:',position)
+      alert(JSON.stringify(position))
       this.setMain(position.coords);
       try{
         let result = await fetch('http://192.168.1.91:3000/location', {
