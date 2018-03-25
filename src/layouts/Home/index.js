@@ -19,9 +19,11 @@ import Base from '../Base'
 import MapView from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { error } from 'util';
+import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight} from '../../config';
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
 const destination = {latitude: 21.2, longitude: 105.77};
 const GOOGLE_MAPS_APIKEY = 'AIzaSyCzNOXHaboNOM_cZHNl-SlUNfeK3KJa1xE';
+
 
 export default class Home extends Base {
   constructor(props){
@@ -36,7 +38,7 @@ export default class Home extends Base {
       listComplete:[],
       modalVisible: false,
       locations: [],
-      squares:[]
+      squares:this.divideSquares()
     }
   }
   search = async (text)=>{
@@ -101,60 +103,59 @@ export default class Home extends Base {
     return false;
   }
   componentDidMount(){
-    this.divideSquares();
-    navigator.geolocation.getCurrentPosition((position) => {
-      console.log('get current successfull', position);
-      let latitude = position.coords.latitude;
-      let longitude = position.coords.longitude;
-      this.setMain({
-        longitude:longitude,
-        latitude:latitude
-      });
-    }, (error) => {
-      console.log(error)
-    }, {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 1000
-    });
-    navigator.geolocation.watchPosition(async(position)=>{
-      console.log('Watch:',position)
-      alert(JSON.stringify(position))
-      this.setMain(position.coords);
-      try{
-        let result = await fetch('http://192.168.1.91:3000/location', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body:JSON.stringify({
-            longitude: position.coords.longitude,
-            latitude: position.coords.latitude
-          })
-        })
-        let data = await result.json()
-        console.log(data);
-      }catch(e){
-        console.error(e);
-      }
+    // navigator.geolocation.getCurrentPosition((position) => {
+    //   console.log('get current successfull', position);
+    //   let latitude = position.coords.latitude;
+    //   let longitude = position.coords.longitude;
+    //   this.setMain({
+    //     longitude:longitude,
+    //     latitude:latitude
+    //   });
+    // }, (error) => {
+    //   console.log(error)
+    // }, {
+    //   enableHighAccuracy: true,
+    //   timeout: 20000,
+    //   maximumAge: 1000
+    // });
+    // navigator.geolocation.watchPosition(async(position)=>{
+    //   console.log('Watch:',position)
+    //   alert(JSON.stringify(position))
+    //   this.setMain(position.coords);
+    //   try{
+    //     let result = await fetch('http://192.168.1.91:3000/location', {
+    //       method: 'POST',
+    //       headers: {
+    //         Accept: 'application/json',
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body:JSON.stringify({
+    //         longitude: position.coords.longitude,
+    //         latitude: position.coords.latitude
+    //       })
+    //     })
+    //     let data = await result.json()
+    //     console.log(data);
+    //   }catch(e){
+    //     console.error(e);
+    //   }
       
 
-    }, (error)=>{
-      console.log('Watch:', error)
+    // }, (error)=>{
+    //   console.log('Watch:', error)
 
-    });
-    fetch('http://192.168.1.91:3000/location').then((result)=>{
-      return result.json();
-    }).then((data)=>{
-      let locations = data.locations;
-      this.setState({
-        ...this.state,
-        locations:locations
-      })
-    }).catch((e)=>{
-      console.log(e)
-    });
+    // });
+    // fetch('http://192.168.1.91:3000/location').then((result)=>{
+    //   return result.json();
+    // }).then((data)=>{
+    //   let locations = data.locations;
+    //   this.setState({
+    //     ...this.state,
+    //     locations:locations
+    //   })
+    // }).catch((e)=>{
+    //   console.log(e)
+    // });
 
   }
   getTop_Left =()=>{
@@ -197,33 +198,36 @@ export default class Home extends Base {
     });
   }
   divideSquares = ()=>{
-    let point = this.getTop_Left();
-    let squares = []
-    for (i = 0; i< 10; i++){
-      for(j = 0; j< 10; j++){
-        let top_left = {
-          longitude:point.longitude + 0.01*j,
-          latitude:point.latitude - 0.01*i
-        };
-        let top_right = {
-          longitude: top_left.longitude + 0.01,
-          latitude: top_left.latitude
-        };
-        let bottom_right = {
-          longitude: top_right.longitude,
-          latitude: top_right.latitude - 0.01
-        };
-        let bottom_left = {
-          longitude: bottom_right.longitude - 0.01,
-          latitude:bottom_right.latitude
+    let point = topLeft;
+    let squares = [];
+    let unitLatitude = deltaLatitude/23.0;
+    let unitLongitude = deltaLongitude/56.0;
+    console.log('check',deltaLongitude, deltaLatitude, topLeft)
+    for ( let i = 0 ; i< 23; i++){
+        for ( let j = 0 ; j < 56 ;j++){
+            let topLeft = {
+                longitude:point.longitude + unitLongitude*j,
+                latitude:point.latitude - unitLatitude*i
+            };
+            let topRight = {
+                longitude: topLeft.longitude + unitLongitude,
+                latitude: topLeft.latitude
+            };
+            let bottomRight = {
+                longitude: topRight.longitude,
+                latitude: topRight.latitude - unitLatitude
+            };
+            let bottomLeft = {
+                longitude: bottomRight.longitude - unitLongitude,
+                latitude: bottomRight.latitude
+            }
+            squares.push({
+                topLeft: topLeft,
+                topRight:topRight,
+                bottomRight:bottomRight,
+                bottomLeft:bottomLeft
+            });    
         }
-        squares.push({
-          top_left: top_left,
-          top_right:top_right,
-          bottom_right:bottom_right,
-          bottom_left:bottom_left
-        });
-      }
     }
     return squares
   }
@@ -244,10 +248,6 @@ export default class Home extends Base {
 
   }
   renderContent() {
-    let top_left =  this.getTop_Left();
-    let top_right = this.getTop_Right();
-    let bottom_right =  this.getBottom_Right();
-    let bottom_left = this.getBottom_Left();
     let squares = this.divideSquares();
     return (
       <View style={styles.container}>
@@ -275,10 +275,10 @@ export default class Home extends Base {
           />
           <MapView.Polygon 
             coordinates={[
-                top_left,
-                top_right,
-                bottom_right,
-                bottom_left
+                topLeft,
+                topRight,
+                bottomRight,
+                bottomLeft
             ]}
             fillColor={'#28bc1e50'}
           />
@@ -290,10 +290,10 @@ export default class Home extends Base {
                 <MapView.Polygon 
                   key={index}
                   coordinates={[
-                      value.top_left,
-                      value.top_right,
-                      value.bottom_right,
-                      value.bottom_left
+                      value.topLeft,
+                      value.topRight,
+                      value.bottomRight,
+                      value.bottomLeft
                   ]}
 
                   fillColor={`rgb(${count}, ${255-count}, 0)`}

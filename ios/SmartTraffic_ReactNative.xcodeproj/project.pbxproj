@@ -1290,6 +1290,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.BeetSoft.SmartTraffic-ReactNative";
 				PRODUCT_NAME = SmartTraffic_ReactNative;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1310,6 +1311,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.BeetSoft.SmartTraffic-ReactNative";
 				PRODUCT_NAME = SmartTraffic_ReactNative;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
