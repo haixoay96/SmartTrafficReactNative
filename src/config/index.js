@@ -16,3 +16,5 @@ export const bottomRight = {
     latitude:20.951180,
     longitude:105.951180
 };
+
+export const HOST = 'http://192.168.0.133:3000';

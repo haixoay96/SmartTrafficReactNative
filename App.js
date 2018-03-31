@@ -16,7 +16,7 @@ import {
   Modal
 } from 'react-native';
 import {Scene, Router, Reducer, Actions, ActionConst} from 'react-native-router-flux'
-import {Home} from '@layouts'
+import {Home, Login, SignUp} from '@layouts'
 const createReducer = params => {
   const defaultReducer = new Reducer(params);
 
@@ -24,12 +24,14 @@ const createReducer = params => {
     return defaultReducer(state, action);
   }
 };
-export default class App extends Component<{}> {
+export default class App extends Component {
   render(){
     return(
         <Router createReducer={createReducer}>
-          <Scene key='root' direction='horizontal'>
-            <Scene key='Home' component={Home} hideNavBar initial/>
+          <Scene key='root' direction='horizontal' panHandlers={null}>
+            <Scene key='Home' component={Home} hideNavBar  />
+            <Scene key='SignUp' component={SignUp} hideNavBar showBackBottom/>
+            <Scene key='Login' component={Login} hideNavBar initial />
           </Scene>
         </Router>
     )

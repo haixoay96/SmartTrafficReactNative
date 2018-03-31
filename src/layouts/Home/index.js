@@ -13,17 +13,53 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Modal
+  Modal,
+  Image
 } from 'react-native';
 import Base from '../Base'
 import MapView from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
+import Drawer from 'react-native-drawer'
+import { Actions} from 'react-native-router-flux';
 import { error } from 'util';
+import {menu} from 'images';
 import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight} from '../../config';
+
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
 const destination = {latitude: 21.2, longitude: 105.77};
 const GOOGLE_MAPS_APIKEY = 'AIzaSyCzNOXHaboNOM_cZHNl-SlUNfeK3KJa1xE';
 
+function ControlPanel(props){
+  return(
+    <View style={{
+      flex:1,
+      backgroundColor:'#ffffff'
+    }}>
+      <Text style={{
+        alignSelf:'center',
+        marginTop:10,
+        fontSize:20
+      }}>
+        {props.username}
+      </Text>
+      <Text style={{
+        alignSelf:'center',
+        position:'absolute',
+        bottom:0,
+        padding:20,
+        backgroundColor:'green',
+        marginBottom:20
+      }}
+        onPress={(e)=>{
+          Actions.reset('Login');
+        }}
+      >
+        Logout
+      </Text>
+
+    </View>
+  )
+}
 
 export default class Home extends Base {
   constructor(props){
@@ -158,51 +194,11 @@ export default class Home extends Base {
     // });
 
   }
-  getTop_Left =()=>{
-    let position = this.state.region;
-    return{
-      latitude: position.latitude + 0.05,
-      longitude: position.longitude - 0.05
-    }
-  }
-  getTop_Right= ()=>{
-    let position = this.state.region;
-    return{
-      latitude:position.latitude + 0.05,
-      longitude:position.longitude + 0.05
-    }
-  }
-  getBottom_Left =()=>{
-    let position = this.state.region;
-    return{
-      latitude:position.latitude - 0.05,
-      longitude:position.longitude - 0.05
-    }
-  }
-  getBottom_Right = ()=>{
-    let position = this.state.region;
-    return{
-      latitude:position.latitude - 0.05,
-      longitude:position.longitude + 0.05
-    }
-  }
-  setMain = (position)=>{
-    this.setState({
-      ...this.state,
-      region: {
-        latitude: position.latitude,
-        longitude: position.longitude,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
-      }
-    });
-  }
   divideSquares = ()=>{
     let point = topLeft;
     let squares = [];
     let unitLatitude = deltaLatitude/23.0;
     let unitLongitude = deltaLongitude/56.0;
-    console.log('check',deltaLongitude, deltaLatitude, topLeft)
     for ( let i = 0 ; i< 23; i++){
         for ( let j = 0 ; j < 56 ;j++){
             let topLeft = {
@@ -250,104 +246,126 @@ export default class Home extends Base {
   renderContent() {
     let squares = this.divideSquares();
     return (
-      <View style={styles.container}>
-        <MapView
-          showsMyLocationButton={true}
-          showsUserLocation={true}
-          initialRegion={this.state.region}
-          region={this.state.region}
-          style={styles.map}
-          onRegionChange={this.onRegionChange}
-        >
-          <MapView.Marker
-            draggable
-            coordinate={{
-              latitude:this.state.region.latitude,
-              longitude: this.state.region.longitude
-            }}
-            onDragEnd={(e)=>{
-              console.log('Move', e);
-              let latitude = e.nativeEvent.coordinate.latitude;
-              let longitude = e.nativeEvent.coordinate.longitude;
-            }}
-            title={'here'}
-            description={'ok'}
-          />
-          <MapView.Polygon 
-            coordinates={[
-                topLeft,
-                topRight,
-                bottomRight,
-                bottomLeft
-            ]}
-            fillColor={'#28bc1e50'}
-          />
-          {
-            squares.map((value, index)=>{
-              let count = this.countInBox(value);
-              console.log('count', count)
-              return(
-                <MapView.Polygon 
-                  key={index}
-                  coordinates={[
-                      value.topLeft,
-                      value.topRight,
-                      value.bottomRight,
-                      value.bottomLeft
-                  ]}
+      <Drawer
+        openDrawerOffset={0.2}
+        tapToClose={true}
+        type='static'
+        ref={(ref) => this._drawer = ref}
+        content={<ControlPanel username={this.props.username}/>}
+      >
+        <View style={styles.container}>
+          <MapView
+            showsMyLocationButton={true}
+            showsUserLocation={true}
+            initialRegion={this.state.region}
+            region={this.state.region}
+            style={styles.map}
+            onRegionChange={this.onRegionChange}
+          >
+            <MapView.Marker
+              draggable
+              coordinate={{
+                latitude:this.state.region.latitude,
+                longitude: this.state.region.longitude
+              }}
+              onDragEnd={(e)=>{
+                console.log('Move', e);
+                let latitude = e.nativeEvent.coordinate.latitude;
+                let longitude = e.nativeEvent.coordinate.longitude;
+              }}
+              title={'here'}
+              description={'ok'}
+            />
+            <MapView.Polygon 
+              coordinates={[
+                  topLeft,
+                  topRight,
+                  bottomRight,
+                  bottomLeft
+              ]}
+             // fillColor={'rgba(20,23,45,50)'}
+            />
+            {
+              squares.map((value, index)=>{
+                let count = this.countInBox(value);
+                console.log('count', count)
+                return(
+                  <MapView.Polygon 
+                    key={index}
+                    coordinates={[
+                        value.topLeft,
+                        value.topRight,
+                        value.bottomRight,
+                        value.bottomLeft
+                    ]}
 
-                  fillColor={`rgb(${count}, ${255-count}, 0)`}
+                    fillColor={`rgba(${count}, ${255-count}, 0, 0.5)`}
+                  />
+                )
+              })
+            }
+            {/* {
+              this.state.locations.map((value, index)=>{
+                return(
+                  <MapView.Marker
+                    key={index}
+                    coordinate={{
+                      latitude:value.latitude,
+                      longitude: value.longitude
+                    }}
+                    title={'here'}
+                    description={'ok'}
                 />
-              )
-            })
-          }
-          {/* {
-            this.state.locations.map((value, index)=>{
-              return(
-                <MapView.Marker
-                  key={index}
-                  coordinate={{
-                    latitude:value.latitude,
-                    longitude: value.longitude
-                  }}
-                  title={'here'}
-                  description={'ok'}
-              />
-              )
-            })
-          } */}
-        </MapView>
-        <View style={styles.wrapSearch}> 
-          <TextInput style={{
-            padding:10
-          }} underlineColorAndroid='transparent' onChangeText={this.search} placeholder='Tìm kiếm ở đây' />
-          <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/>
-        </View>
-        <TouchableOpacity style={styles.findWay} onPress={(e)=>{
-          this.setState({
-            ...this.state,
-            modalVisible:true
-          })
-        }} > 
-          <Text>
-            findWay
-          </Text>
-        </TouchableOpacity>
-        <Modal
-          visible={this.state.modalVisible}
-          animationType={'slide'}
-          onRequestClose={(e)=>{
+                )
+              })
+            } */}
+          </MapView>
+          <View style={styles.wrapSearch}>
+            <TouchableOpacity style={{
+                alignSelf:'center',
+            }}
+              onPress={(e)=>{
+                this._drawer.open()
+              }}
+            >
+              <Image source={menu} style={{
+                height:20,
+                width:20,
+                marginLeft:10
+              }}/>
+            </TouchableOpacity>
+            <TextInput style={{
+              padding:10
+            }} underlineColorAndroid='transparent' onChangeText={this.search} placeholder='Tìm kiếm ở đây' />
+            {/* <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/> */}
+          </View>
+          {/* <TouchableOpacity style={styles.findWay} onPress={(e)=>{
             this.setState({
               ...this.state,
-              modalVisible:false
+              modalVisible:true
             })
-          }}
-        >
-          <Text>
-            Doing something!
-          </Text>
-        </Modal>
-      </View>
+          }} > 
+            <Text>
+              findWay
+            </Text>
+          </TouchableOpacity> */}
+          {/* <Modal
+            visible={this.state.modalVisible}
+            animationType={'slide'}
+            onRequestClose={(e)=>{
+              this.setState({
+                ...this.state,
+                modalVisible:false
+              })
+            }}
+          >
+            <Text>
+              Doing something!
+            </Text>
+          </Modal> */}
+        </View>
+      </Drawer>
+      
     );
   }
 }
@@ -358,6 +376,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
   },
   wrapSearch: {
+      flexDirection: 'row',
       position:'absolute',
       top:0,
       left:0,
