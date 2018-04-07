@@ -23,7 +23,7 @@ import Drawer from 'react-native-drawer'
 import { Actions} from 'react-native-router-flux';
 import { error } from 'util';
 import {menu} from 'images';
-import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight} from '../../config';
+import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight, HOST} from '../../config';
 
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
 const destination = {latitude: 21.2, longitude: 105.77};
@@ -74,7 +74,8 @@ export default class Home extends Base {
       listComplete:[],
       modalVisible: false,
       locations: [],
-      squares:this.divideSquares()
+      squares:[],
+      paths: []
     }
   }
   search = async (text)=>{
@@ -139,6 +140,7 @@ export default class Home extends Base {
     return false;
   }
   componentDidMount(){
+    this.getSquares();
     // navigator.geolocation.getCurrentPosition((position) => {
     //   console.log('get current successfull', position);
     //   let latitude = position.coords.latitude;
@@ -194,6 +196,35 @@ export default class Home extends Base {
     // });
 
   }
+  getSquares = async ()=>{
+    try{
+      let result = await fetch(`${HOST}/location`);
+      let data = await result.json();
+      if( data.status === 1000){
+        this.setState({
+          squares:data.squares
+        })
+      }
+    }catch(e){
+      alert(JSON.stringify(e))
+    }
+  }
+  findPath = async( from , to)=>{
+    try{
+      let result = await fetch(`${HOST}/findpath/${from}/${to}`);
+      let data = await result.json();
+      if( data.status === 1000){
+        this.setState({
+          ...this.state,
+          paths: data.paths
+        })
+        alert(data.paths)
+      }
+
+    }catch(e){
+      alert(JSON.stringify(e));
+    }
+  }
   divideSquares = ()=>{
     let point = topLeft;
     let squares = [];
@@ -244,7 +275,6 @@ export default class Home extends Base {
 
   }
   renderContent() {
-    let squares = this.divideSquares();
     return (
       <Drawer
         openDrawerOffset={0.2}
@@ -262,7 +292,7 @@ export default class Home extends Base {
             style={styles.map}
             onRegionChange={this.onRegionChange}
           >
-            <MapView.Marker
+            {/* <MapView.Marker
               draggable
               coordinate={{
                 latitude:this.state.region.latitude,
@@ -275,7 +305,7 @@ export default class Home extends Base {
               }}
               title={'here'}
               description={'ok'}
-            />
+            /> */}
             <MapView.Polygon 
               coordinates={[
                   topLeft,
@@ -286,9 +316,7 @@ export default class Home extends Base {
              // fillColor={'rgba(20,23,45,50)'}
             />
             {
-              squares.map((value, index)=>{
-                let count = this.countInBox(value);
-                console.log('count', count)
+              this.state.squares.map((value, index)=>{
                 return(
                   <MapView.Polygon 
                     key={index}
@@ -299,26 +327,26 @@ export default class Home extends Base {
                         value.bottomLeft
                     ]}
 
-                    fillColor={`rgba(${count}, ${255-count}, 0, 0.5)`}
+                    fillColor={`rgba(${value.count*8}, ${255-value.count}, 0, 0.5)`}
                   />
                 )
               })
             }
-            {/* {
-              this.state.locations.map((value, index)=>{
+            {
+              this.state.paths.map((value, index)=>{
                 return(
                   <MapView.Marker
                     key={index}
                     coordinate={{
-                      latitude:value.latitude,
-                      longitude: value.longitude
+                      latitude:(this.state.squares[value].topLeft.latitude + this.state.squares[value].bottomLeft.latitude)/2.0,
+                      longitude: (this.state.squares[value].topLeft.longitude + this.state.squares[value].topRight.longitude)/2.0,
                     }}
                     title={'here'}
                     description={'ok'}
                 />
                 )
               })
-            } */}
+            }
           </MapView>
           <View style={styles.wrapSearch}>
             <TouchableOpacity style={{
@@ -339,16 +367,14 @@ export default class Home extends Base {
             }} underlineColorAndroid='transparent' onChangeText={this.search} placeholder='Tìm kiếm ở đây' />
             {/* <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/> */}
           </View>
-          {/* <TouchableOpacity style={styles.findWay} onPress={(e)=>{
-            this.setState({
-              ...this.state,
-              modalVisible:true
-            })
+          <TouchableOpacity style={styles.findWay} onPress={(e)=>{
+            alert('Search!')
+            this.findPath(70,1000)
           }} > 
             <Text>
               findWay
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
           {/* <Modal
             visible={this.state.modalVisible}
             animationType={'slide'}

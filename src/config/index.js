@@ -17,4 +17,4 @@ export const bottomRight = {
     longitude:105.951180
 };
 
-export const HOST = 'http://192.168.0.133:3000';
+export const HOST = 'http://192.168.1.91:3000';
