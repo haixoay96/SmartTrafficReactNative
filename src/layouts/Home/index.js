@@ -327,7 +327,7 @@ export default class Home extends Base {
                         value.bottomLeft
                     ]}
 
-                    fillColor={`rgba(${value.count*8}, ${255-value.count}, 0, 0.5)`}
+                    fillColor={`rgba(${value.count*8}, ${255-value.count}, 0, 0.2)`}
                   />
                 )
               })
@@ -369,7 +369,7 @@ export default class Home extends Base {
           </View>
           <TouchableOpacity style={styles.findWay} onPress={(e)=>{
             alert('Search!')
-            this.findPath(70,1000)
+            this.findPath(300,1100)
           }} > 
             <Text>
               findWay
