@@ -1,10 +1,9 @@
 import React, {Component} from 'react';
-import {View, Text,TextInput , TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text,TextInput , TouchableOpacity, StyleSheet, AsyncStorage} from 'react-native';
 import {Actions} from 'react-native-router-flux';
 import Base from '../Base';
 import {HOST} from '../../config';
 import { action } from 'mobx';
-
 
 export default class Login extends Base{
     constructor(props){
@@ -36,6 +35,7 @@ export default class Login extends Base{
             });
             let data = await result.json();
             if(data.status === 1000){
+                AsyncStorage.setItem('username',username)
                 Actions.Home({
                     username:username
                 });
@@ -44,6 +44,7 @@ export default class Login extends Base{
             alert(JSON.stringify(data));
         }catch(e){
             alert(JSON.stringify(e));
+            console.error(e)
         }
     }
     renderContent(){

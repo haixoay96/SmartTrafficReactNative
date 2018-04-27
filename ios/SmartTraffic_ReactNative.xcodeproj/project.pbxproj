@@ -648,7 +648,6 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				178CEDC44E150025E64D2FFC /* [CP] Embed Pods Frameworks */,
 				AAC73386BD9F9259581A3833 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -711,6 +710,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = T2F46JJNJ6;
+						ProvisioningStyle = Automatic;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -1106,21 +1106,6 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		178CEDC44E150025E64D2FFC /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SmartTraffic_ReactNative/Pods-SmartTraffic_ReactNative-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		2C2B78A52D6FA3770559DE23 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1278,6 +1263,8 @@
 			baseConfigurationReference = DF20A75B00BD0DFDC333186E /* Pods-SmartTraffic_ReactNative.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = T2F46JJNJ6;
@@ -1288,8 +1275,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.BeetSoft.SmartTraffic-ReactNative";
+				PRODUCT_BUNDLE_IDENTIFIER = com.BeetSoft.SmartTraffic;
 				PRODUCT_NAME = SmartTraffic_ReactNative;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -1300,6 +1288,8 @@
 			baseConfigurationReference = 0B6A06D4BF253BF0B1E97ED1 /* Pods-SmartTraffic_ReactNative.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = T2F46JJNJ6;
 				INFOPLIST_FILE = SmartTraffic_ReactNative/Info.plist;
@@ -1309,8 +1299,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.BeetSoft.SmartTraffic-ReactNative";
+				PRODUCT_BUNDLE_IDENTIFIER = com.BeetSoft.SmartTraffic;
 				PRODUCT_NAME = SmartTraffic_ReactNative;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};

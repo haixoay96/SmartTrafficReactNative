@@ -22,7 +22,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import Drawer from 'react-native-drawer'
 import { Actions} from 'react-native-router-flux';
 import { error } from 'util';
-import {menu} from 'images';
+import {menu, direction, avatar} from 'images';
 import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight, HOST} from '../../config';
 
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
@@ -35,19 +35,60 @@ function ControlPanel(props){
       flex:1,
       backgroundColor:'#ffffff'
     }}>
+      <Image style={{
+        height:100,
+        width:100,
+        margin:5,
+        alignSelf:'center'
+      }} source={avatar}/>
       <Text style={{
         alignSelf:'center',
         marginTop:10,
-        fontSize:20
+        fontSize:25
       }}>
         {props.username}
       </Text>
+      <View style={{
+        paddingLeft:30
+      }}>
+        <Text 
+          style={{
+            marginTop:50,
+            margin:5,
+            fontSize:20
+          }}
+          onPress={(e)=>{
+          Actions.FindWay()
+        }}>
+          Tìm đường
+        </Text>
+        <Text
+           style={{
+            margin:5,
+            fontSize:20
+          }}
+          onPress={(e)=>{
+            Actions.History({
+              username:props.username
+            })
+          }}
+        >
+          Xem lịch sử
+        </Text>
+        <Text
+           style={{
+            margin:5,
+            fontSize:20
+          }}
+        >
+          Đổi mật khẩu
+        </Text>
+      </View>
       <Text style={{
         alignSelf:'center',
         position:'absolute',
         bottom:0,
         padding:20,
-        backgroundColor:'green',
         marginBottom:20
       }}
         onPress={(e)=>{
@@ -68,139 +109,69 @@ export default class Home extends Base {
       region: {
         latitude: 21.1096719,
         longitude: 105.7260039,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       },
       listComplete:[],
       modalVisible: false,
       locations: [],
       squares:[],
-      paths: []
-    }
-  }
-  search = async (text)=>{
-    let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&types=geocode&key=${GOOGLE_MAPS_APIKEY}`
-    try {
-      let result = await fetch(URL_SEARCH)
-      let data = await result.json()
-      this.setState({
-        ...this.state,
-        listComplete:data.predictions
-      })
-    }catch(e){
-
-    }
-  }
-  getLocationByID = async (place_id)=>{
-    let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${place_id}&key=${GOOGLE_MAPS_APIKEY}`
-    try{
-      let result = await fetch(URL_SEARCH)
-      let data = await result.json()
-      console.log(data)
-      let latitude = data.result.geometry.location.lat
-      let longitude = data.result.geometry.location.lng
-      this.setMain({
-        latitude:latitude,
-        longitude: longitude
-      });
-      this.setState({
-        ...this.state,
-        listComplete:[]
-      })
-    }catch(e){
-
-    }
-  }
-  countInBox = (box)=>{
-    let locations = this.state.locations;
-    let count = 0;
-    locations.forEach((value, index)=>{
-      if(this.isOnBox(box,value)){
-        count++
+      paths: [],
+      currentLocation:{
       }
-    });
-    return count;
-  }
-  isOnBox = (box, point)=>{
-    //get box
-    let top_left = box.top_left;
-    let top_right = box.top_right;
-    let bottom_right = box.bottom_right;
-    let bottom_left = box.bottom_left;
-    //get edage
-    let top =  top_left.latitude;
-    let bottom = bottom_right.latitude;
-
-    let left = top_left.longitude;
-    let right = bottom_right.longitude;
-
-    if( point.latitude <= top && point.latitude >= bottom && point.longitude >= left && point.longitude <= right ){
-      return true;
     }
-    return false;
+  }
+  getLocationByID =  (place_id)=>{
+    let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${place_id}&key=${GOOGLE_MAPS_APIKEY}`
+    let result = fetch(URL_SEARCH)
+    // let latitude = data.result.geometry.location.lat
+    // let longitude = data.result.geometry.location.lng
+    return result
   }
   componentDidMount(){
     this.getSquares();
-    // navigator.geolocation.getCurrentPosition((position) => {
-    //   console.log('get current successfull', position);
-    //   let latitude = position.coords.latitude;
-    //   let longitude = position.coords.longitude;
-    //   this.setMain({
-    //     longitude:longitude,
-    //     latitude:latitude
-    //   });
-    // }, (error) => {
-    //   console.log(error)
-    // }, {
-    //   enableHighAccuracy: true,
-    //   timeout: 20000,
-    //   maximumAge: 1000
-    // });
-    // navigator.geolocation.watchPosition(async(position)=>{
-    //   console.log('Watch:',position)
-    //   alert(JSON.stringify(position))
-    //   this.setMain(position.coords);
-    //   try{
-    //     let result = await fetch('http://192.168.1.91:3000/location', {
-    //       method: 'POST',
-    //       headers: {
-    //         Accept: 'application/json',
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body:JSON.stringify({
-    //         longitude: position.coords.longitude,
-    //         latitude: position.coords.latitude
-    //       })
-    //     })
-    //     let data = await result.json()
-    //     console.log(data);
-    //   }catch(e){
-    //     console.error(e);
-    //   }
-      
+    navigator.geolocation.watchPosition(async(position)=>{
+      console.log('Watch:',position)
+      let latitude = position.coords.latitude;
+      let longitude = position.coords.longitude;
+      this.setState({
+        ...this.state,
+        currentLocation:{
+          latitude:latitude,
+          longitude:longitude
+        }
+      })
+      try{
+        let result = await fetch(`${HOST}/location`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body:JSON.stringify({
+            longitude: position.coords.longitude,
+            latitude: position.coords.latitude,
+            username:this.props.username,
+            heading:position.coords.heading,
+            speed:position.coords.speed
+          })
+        })
+        let data = await result.json()
+        console.log(data);
+      }catch(e){
+        console.error(e);
+      }
+    }, (error)=>{
+      console.log('Watch:', error)
 
-    // }, (error)=>{
-    //   console.log('Watch:', error)
-
-    // });
-    // fetch('http://192.168.1.91:3000/location').then((result)=>{
-    //   return result.json();
-    // }).then((data)=>{
-    //   let locations = data.locations;
-    //   this.setState({
-    //     ...this.state,
-    //     locations:locations
-    //   })
-    // }).catch((e)=>{
-    //   console.log(e)
-    // });
-
+    });
   }
   getSquares = async ()=>{
     try{
       let result = await fetch(`${HOST}/location`);
       let data = await result.json();
       if( data.status === 1000){
+        console.log(data.squares)
         this.setState({
           squares:data.squares
         })
@@ -209,9 +180,65 @@ export default class Home extends Base {
       alert(JSON.stringify(e))
     }
   }
-  findPath = async( from , to)=>{
+  isOnBox(box, point){
+    //get box
+    let topLeft = box.topLeft;
+    let topRight = box.topRight;
+    let bottomRight = box.bottomRight;
+    let bottomLeft = box.bottomLeft;
+    //get edage
+    let top =  topLeft.latitude;
+    let bottom = bottomRight.latitude;
+
+    let left = topLeft.longitude;
+    let right = bottomRight.longitude;
+    if( point.latitude <= top && point.latitude >= bottom && point.longitude >= left && point.longitude <= right ){
+      return true;
+    }
+    return false;
+  }
+  location2point = (from , to)=>{
+    location1 = -1;
+    location2 = -1;
+    this.state.squares.forEach((item, index)=>{
+      if(this.isOnBox(item, from)){
+        location1 = index;
+      }
+      if(this.isOnBox(item, to)){
+        location2 = index
+      }
+
+    })
+    return {
+      from:location1,
+      to:location2
+    }
+
+  }
+  findPath = async(from , to)=>{
     try{
-      let result = await fetch(`${HOST}/findpath/${from}/${to}`);
+      let URL_SEARCH_1 = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${from}&key=${GOOGLE_MAPS_APIKEY}`
+      let URL_SEARCH_2 = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${to}&key=${GOOGLE_MAPS_APIKEY}`
+      let result1 = fetch(URL_SEARCH_1)
+      let result12 = fetch((URL_SEARCH_2))
+      result1 = await result1;
+      result12 = await result12;
+      let data1 = await result1.json();
+      let data2 = await result12.json();
+      console.log('location',JSON.stringify(data1.result.geometry.location))
+      let point = this.location2point({
+        latitude:data1.result.geometry.location.lat,
+        longitude:data1.result.geometry.location.lng
+      },{
+        latitude:data2.result.geometry.location.lat,
+        longitude:data2.result.geometry.location.lng
+      })
+      console.log('point', point)
+      if( point.from === -1 && point.to === -1 ){
+        alert('Ngoài phạm vi!')
+        return
+      }
+      let result = await fetch(`${HOST}/findpath/${point.from}/${point.to}`);
       let data = await result.json();
       if( data.status === 1000){
         this.setState({
@@ -225,44 +252,6 @@ export default class Home extends Base {
       alert(JSON.stringify(e));
     }
   }
-  divideSquares = ()=>{
-    let point = topLeft;
-    let squares = [];
-    let unitLatitude = deltaLatitude/23.0;
-    let unitLongitude = deltaLongitude/56.0;
-    for ( let i = 0 ; i< 23; i++){
-        for ( let j = 0 ; j < 56 ;j++){
-            let topLeft = {
-                longitude:point.longitude + unitLongitude*j,
-                latitude:point.latitude - unitLatitude*i
-            };
-            let topRight = {
-                longitude: topLeft.longitude + unitLongitude,
-                latitude: topLeft.latitude
-            };
-            let bottomRight = {
-                longitude: topRight.longitude,
-                latitude: topRight.latitude - unitLatitude
-            };
-            let bottomLeft = {
-                longitude: bottomRight.longitude - unitLongitude,
-                latitude: bottomRight.latitude
-            }
-            squares.push({
-                topLeft: topLeft,
-                topRight:topRight,
-                bottomRight:bottomRight,
-                bottomLeft:bottomLeft
-            });    
-        }
-    }
-    return squares
-  }
-  onRegionChange=(region)=> {
-   // console.log('Change', region.latitudeDelta, region.longitudeDelta)
-   // this.setState({ region });
-    
-  }
   renderItem = (item)=>{
     console.log(item)
     return(
@@ -273,6 +262,11 @@ export default class Home extends Base {
       </TouchableOpacity>
     )
 
+  }
+  componentWillReceiveProps(nextProps){
+    if(nextProps.place_id1 && nextProps.place_id2){
+      this.findPath(nextProps.place_id1, nextProps.place_id2)
+    }
   }
   renderContent() {
     return (
@@ -288,24 +282,9 @@ export default class Home extends Base {
             showsMyLocationButton={true}
             showsUserLocation={true}
             initialRegion={this.state.region}
-            region={this.state.region}
             style={styles.map}
             onRegionChange={this.onRegionChange}
           >
-            {/* <MapView.Marker
-              draggable
-              coordinate={{
-                latitude:this.state.region.latitude,
-                longitude: this.state.region.longitude
-              }}
-              onDragEnd={(e)=>{
-                console.log('Move', e);
-                let latitude = e.nativeEvent.coordinate.latitude;
-                let longitude = e.nativeEvent.coordinate.longitude;
-              }}
-              title={'here'}
-              description={'ok'}
-            /> */}
             <MapView.Polygon 
               coordinates={[
                   topLeft,
@@ -326,7 +305,6 @@ export default class Home extends Base {
                         value.bottomRight,
                         value.bottomLeft
                     ]}
-
                     fillColor={`rgba(${value.count*8}, ${255-value.count}, 0, 0.2)`}
                   />
                 )
@@ -351,6 +329,7 @@ export default class Home extends Base {
           <View style={styles.wrapSearch}>
             <TouchableOpacity style={{
                 alignSelf:'center',
+                justifyContent:'flex-start'
             }}
               onPress={(e)=>{
                 this._drawer.open()
@@ -363,18 +342,34 @@ export default class Home extends Base {
               }}/>
             </TouchableOpacity>
             <TextInput style={{
-              padding:10
+              padding:15,
+              flex:1
             }} underlineColorAndroid='transparent' onChangeText={this.search} placeholder='Tìm kiếm ở đây' />
+            <TouchableOpacity style={{
+                alignSelf:'center',
+                justifyContent:'flex-end'
+            }}
+              onPress={(e)=>{
+                Actions.FindWay()
+               
+              }}
+            >
+              <Image source={direction} style={{
+                height:20,
+                width:20,
+                marginRight:10
+              }}/>
+            </TouchableOpacity>
             {/* <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/> */}
           </View>
-          <TouchableOpacity style={styles.findWay} onPress={(e)=>{
+          {/* <TouchableOpacity style={styles.findWay} onPress={(e)=>{
             alert('Search!')
-            this.findPath(300,1100)
+            this.findPath(1,150)
           }} > 
             <Text>
               findWay
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {/* <Modal
             visible={this.state.modalVisible}
             animationType={'slide'}
