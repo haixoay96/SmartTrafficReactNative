@@ -305,7 +305,7 @@ export default class Home extends Base {
                         value.bottomRight,
                         value.bottomLeft
                     ]}
-                    fillColor={`rgba(${value.count*8}, ${255-value.count}, 0, 0.2)`}
+                    fillColor={`rgba(${255}, ${255-(value.count > 10 ?(200+value.count) :value.count)}, 0, 0.2)`}
                   />
                 )
               })
