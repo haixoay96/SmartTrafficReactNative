@@ -168,7 +168,22 @@ export default class Home extends Base {
   }
   getSquares = async ()=>{
     try{
-      let result = await fetch(`${HOST}/location`);
+      let date = new Date();
+      
+      let result = await fetch(`${HOST}/density`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                year: date.getFullYear(),
+                month: date.getMonth(),
+                date:date.getDate(),
+                hour: date.getHours(),
+                minute: date.getMinutes()
+            })
+      });
       let data = await result.json();
       if( data.status === 1000){
         console.log(data.squares)
