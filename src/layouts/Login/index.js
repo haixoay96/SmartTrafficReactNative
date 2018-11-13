@@ -3,8 +3,6 @@ import {View, Text,TextInput , TouchableOpacity, StyleSheet, AsyncStorage} from 
 import {Actions} from 'react-native-router-flux';
 import Base from '../Base';
 import {HOST} from '../../config';
-import { action } from 'mobx';
-
 export default class Login extends Base{
     constructor(props){
         super(props);
