@@ -1,20 +1,23 @@
 import React, {Component} from 'react';
-import {View, Text,TextInput , TouchableOpacity, StyleSheet, AsyncStorage} from 'react-native';
+import {View, TouchableOpacity, StyleSheet, AsyncStorage} from 'react-native';
+import {TextInput, withTheme, Portal, Colors, Title, Button, Text} from 'react-native-paper';
 import {Actions} from 'react-native-router-flux';
 import Base from '../Base';
 import {HOST} from '../../config';
-export default class Login extends Base{
+class Login extends Base{
     constructor(props){
         super(props);
-        this.username = this.props.username?this.props.username:'';
-        this.password = this.props.password?this.props.password:'';
+        this.state = {
+            username: this.props.username?this.props.username:'',
+            password: this.props.password?this.props.password:''
+        }
     }
     goToSignUp = ()=>{
         Actions.SignUp();
     }
     makeLogin = async ()=>{
-        let username = this.username;
-        let password = this.password;
+        let username = this.state.username;
+        let password = this.state.password;
         if (username === '' || password=== ''){
             alert('Hoàn thiện username và password!');
             return;
@@ -46,50 +49,66 @@ export default class Login extends Base{
         }
     }
     renderContent(){
+        const {
+            theme: {
+              colors: { background },
+            },
+        } = this.props
         return(
-            <View style={styles.container}>
-                <Text style={{
+            <View style={[styles.container, {backgroundColor:background}]}>
+                <Title style={{
                     alignSelf:'center',
                     marginTop:'20%',
                     fontSize:25
                 }}>
-                    Smart Traffic System
-                </Text>
-                <TextInput defaultValue={this.props.username} underlineColorAndroid='transparent' placeholder='Username' style={{
-                    marginHorizontal:10,
-                    padding:15,
-                    marginTop:'15%'
-                }}
-                onChangeText={(text)=>{
-                    this.username = text; 
-                }}
+                    Smart Traffic
+                </Title>
+                <TextInput 
+                mode='outlined'
+                    style={{
+                        marginHorizontal:10,
+                        marginTop:'15%'
+                    }}
+                    label='Username'
+                    value={this.state.username}
+                    onChangeText={(text)=>{
+                        this.setState({
+                            ...this.state,
+                            username: text
+                        })
+                    }}
                 />
-                <TextInput defaultValue={this.props.password} underlineColorAndroid='transparent' placeholder='Password' style={{
-                    marginHorizontal:10,
-                    padding:15,
-                }}
-                secureTextEntry={true}
-                onChangeText={(text)=>{
-                    this.password = text; 
-                }}
+                <TextInput
+                    mode='outlined'
+                    style={{
+                        marginTop:5,
+                        marginHorizontal:10,
+                    }}
+                    label='Password'
+                    value={this.state.password}
+                    secureTextEntry={true}
+                    onChangeText={(text)=>{
+                        this.setState({
+                            ...this.state,
+                            password: text
+                        })
+                    }}
                 />
-                <TouchableOpacity style={{
-                    marginHorizontal:10,
-                    justifyContent:'center',
-                    backgroundColor:'#435353',
-                    alignItems:'center',
-                    padding:15,
-                    marginTop:'10%'
-                }}
-                onPress={(e)=>{
-                    this.makeLogin();
-                }}
-                >
-                    <Text>Login</Text>
-                </TouchableOpacity>
+                <Button 
+                    style={{
+                        marginTop:40,
+                        marginHorizontal:10,
+                    }}
+                    mode="contained" 
+                    onPress={(e)=>{
+                        this.makeLogin();
+                    }}
+                >   
+                   Login
+                </Button>
                 <Text style={{
                     alignSelf:'center',
-                    marginTop:'5%'
+                    marginTop:40
                 }}
                 onPress={(e)=>{
                     this.goToSignUp();
@@ -104,10 +123,10 @@ export default class Login extends Base{
 
 }
 
+export default withTheme(Login)
 const styles = StyleSheet.create({
     container:{
         flex:1,
-        backgroundColor:'#ffffff'
-        
+        backgroundColor: Colors.white
     }
 })

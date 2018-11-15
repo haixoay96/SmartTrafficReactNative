@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import {Scene, Router, Reducer, Actions, ActionConst} from 'react-native-router-flux'
 import {Home, Login, SignUp, FindWay, Input, History} from '@layouts'
-import { Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider , DefaultTheme} from 'react-native-paper';
 const createReducer = params => {
   const defaultReducer = new Reducer(params);
 
@@ -25,10 +25,11 @@ const createReducer = params => {
     return defaultReducer(state, action);
   }
 };
+
 export default class App extends Component {
   render(){
     return(
-      <PaperProvider>
+      <PaperProvider theme={DefaultTheme} >
         <Router createReducer={createReducer}>
           <Scene key='root' direction='horizontal' panHandlers={null} >
             <Scene key='Home' component={Home} hideNavBar   />

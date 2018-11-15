@@ -1,24 +1,28 @@
 import React, {Component} from 'react';
-import {View, Text,TextInput , TouchableOpacity, StyleSheet} from 'react-native';
+import {View, TouchableOpacity, StyleSheet} from 'react-native';
+import {TextInput, withTheme, Portal, Colors, Title, Button, Text} from 'react-native-paper';
 import {Actions} from 'react-native-router-flux';
 import Base from '../Base';
 import {HOST} from '../../config';
 
-export default class Login extends Base{
+class SignUp extends Base{
     constructor(props){
         super(props);
-        this.username = '';
-        this.password = '';
-        this.repassword = '';
+        this.state = {
+            username: '',
+            password: '',
+            repassword: ''
+        }
+       
 
     }
     goToLogin = ()=>{
         Actions.Login();
     }
     makeSignUp = async ()=>{
-        let username = this.username;
-        let password = this.password;
-        let repassword = this.repassword;
+        let username = this.state.username;
+        let password = this.state.password;
+        let repassword = this.state.repassword;
         if (username === '' || password=== ''){
             alert('Hoàn thiện username và password!');
             return;
@@ -53,61 +57,81 @@ export default class Login extends Base{
         }
     }
     renderContent(){
+        const {
+            theme: {
+              colors: { background },
+            },
+        } = this.props;
         return(
-            <View style={styles.container}>
-                <Text style={{
+            <View style={[styles.container, {backgroundColor:background}]}>
+                <Title style={{
                     alignSelf:'center',
                     marginTop:'20%',
                     fontSize:25
                 }}>
                     Smart Traffic System
-                </Text>
-                <TextInput underlineColorAndroid='transparent' placeholder='Username' style={{
+                </Title>
+                <TextInput
+                    onChangeText={(text)=>{
+                        this.setState({
+                            ...this.state,
+                            username:text
+                        })
+                    }}
+                    value={this.state.username}
+                    mode='outlined'
+                    label='Username' style={{
                     marginHorizontal:10,
-                    padding:15,
                     marginTop:'15%'
-                }}
-                    onChangeText={(text)=>{
-                        this.username = text;
-                    }}
-                />
-                <TextInput underlineColorAndroid='transparent' placeholder='Password' style={{
+                }}/>
+                <TextInput 
+                    mode='outlined'
+                    value={this.state.password}
+                    label='Password' style={{
                     marginHorizontal:10,
-                    padding:15,
+                    marginTop:5,
                 }}
                     secureTextEntry={true}
                     onChangeText={(text)=>{
-                        this.password = text;
+                        this.setState({
+                            ...this.state,
+                            password: text
+                        })
                     }}
                 />
-                <TextInput underlineColorAndroid='transparent' placeholder='Repassword' style={{
-                    marginHorizontal:10,
-                    padding:15,
-                }}
+                <TextInput 
+                    mode='outlined'
+                    label='Repassword' 
+                    style={{
+                        marginHorizontal:10,
+                        marginTop:5
+                    }}
+                    value={this.state.repassword}
                     secureTextEntry={true}
                     onChangeText={(text)=>{
-                        this.repassword = text;
+                        this.setState({
+                            ...this.state,
+                            repassword: text
+                        })
                     }}
                 />
-                <TouchableOpacity style={{
-                    marginHorizontal:10,
-                    justifyContent:'center',
-                    backgroundColor:'#435353',
-                    alignItems:'center',
-                    padding:15,
-                    marginTop:'10%'
-                }}
+                <Button 
+                    mode='contained'
+                    style={{
+                        marginHorizontal:10,
+                        marginTop:40,
+                    }}
                     onPress={(e)=>{
                         this.makeSignUp();
                     }}
                 >
-                    <Text>SignUp</Text>
-                </TouchableOpacity>
+                    SignUp
+                </Button>
             </View>
         )
     }
 }
-
+export default withTheme(SignUp)
 const styles = StyleSheet.create({
     container:{
         flex:1,
