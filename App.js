@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import {Scene, Router, Reducer, Actions, ActionConst} from 'react-native-router-flux'
 import {Home, Login, SignUp, FindWay, Input, History} from '@layouts'
+import { Provider as PaperProvider } from 'react-native-paper';
 const createReducer = params => {
   const defaultReducer = new Reducer(params);
 
@@ -27,6 +28,7 @@ const createReducer = params => {
 export default class App extends Component {
   render(){
     return(
+      <PaperProvider>
         <Router createReducer={createReducer}>
           <Scene key='root' direction='horizontal' panHandlers={null} >
             <Scene key='Home' component={Home} hideNavBar   />
@@ -37,6 +39,7 @@ export default class App extends Component {
             <Scene key='History' component={History} hideNavBar showBackBottom/>
           </Scene>
         </Router>
+      </PaperProvider>
     )
   }
 

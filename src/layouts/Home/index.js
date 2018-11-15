@@ -4,26 +4,14 @@
  * @flow
  */
 
-import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-  Image
-} from 'react-native';
-import Base from '../Base'
+import { avatar, direction, menu } from 'images';
+import React from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Drawer from 'react-native-drawer';
 import MapView from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
-import Drawer from 'react-native-drawer'
-import { Actions} from 'react-native-router-flux';
-import { error } from 'util';
-import {menu, direction, avatar} from 'images';
-import { deltaLongitude, deltaLatitude, topLeft, topRight, bottomLeft, bottomRight, HOST} from '../../config';
+import { Actions } from 'react-native-router-flux';
+import { bottomLeft, bottomRight, HOST, topLeft, topRight } from '../../config';
+import Base from '../Base';
 
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
 const destination = {latitude: 21.2, longitude: 105.77};

@@ -1,7 +1,6 @@
-import React, {Component} from 'react';
-import {View, Text,TextInput,TouchableOpacity, Image , StyleSheet} from 'react-native';
-import {Actions} from 'react-native-router-flux';
-import {swap} from 'images';
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { Actions } from 'react-native-router-flux';
 import Base from '../Base';
 
 export default class FindWay extends Base{
