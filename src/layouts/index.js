@@ -4,4 +4,5 @@ import SignUp from './SignUp';
 import FindWay from './FindWay';
 import Input from './Input';
 import History from './History';
-export {Home, Login, SignUp, FindWay, Input, History}
+import ChangePass from './ChangePass';
+export {Home, Login, SignUp, FindWay, Input, History, ChangePass}

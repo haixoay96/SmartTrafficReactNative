@@ -4,39 +4,24 @@ import {TextInput, withTheme, Portal, Colors, Title, Button, Text} from 'react-n
 import {Actions} from 'react-native-router-flux';
 import Base from '../Base';
 import {HOST} from '../../config';
-class Login extends Base{
+class ChangePass extends Base{
     constructor(props){
         super(props);
         this.state = {
-            username: this.props.username?this.props.username:'',
-            password: this.props.password?this.props.password:''
+            password: '',
+            new_password: ''
         }
     }
-    goToSignUp = ()=>{
-        Actions.SignUp();
-    }
-    async componentDidMount(){
-        try {
-            const value = await AsyncStorage.getItem('username');
-            if (value !== null) {
-              Actions.Home({
-                  username: value
-              })
-              console.log(value);
-            }
-        } catch (error) {
-             // Error retrieving data
-        }
-    }
-    makeLogin = async ()=>{
-        let username = this.state.username;
+    changePass = async ()=>{
         let password = this.state.password;
-        if (username === '' || password=== ''){
-            alert('Hoàn thiện username và password!');
+        let new_password = this.state.new_password;
+        if (password === '' || new_password=== ''){
+            alert('Hoàn thiện password và new password!');
             return;
         }
         try{
-            let result = await fetch(`${HOST}/login`, {
+            let username = await AsyncStorage.getItem('username');
+            let result = await fetch(`${HOST}/changepassword`, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -44,17 +29,11 @@ class Login extends Base{
                 },
                 body: JSON.stringify({
                     username:username,
-                    password:password
+                    password:password,
+                    new_password: new_password
                 })
             });
             let data = await result.json();
-            if(data.status === 1000){
-                AsyncStorage.setItem('username',username)
-                Actions.Home({
-                    username:username
-                });
-                return;
-            }
             alert(JSON.stringify(data));
         }catch(e){
             alert(JSON.stringify(e));
@@ -82,12 +61,13 @@ class Login extends Base{
                         marginHorizontal:10,
                         marginTop:'15%'
                     }}
-                    label='Username'
-                    value={this.state.username}
+                    label='password'
+                    value={this.state.password}
+                    secureTextEntry={true}
                     onChangeText={(text)=>{
                         this.setState({
                             ...this.state,
-                            username: text
+                            password: text
                         })
                     }}
                 />
@@ -97,13 +77,13 @@ class Login extends Base{
                         marginTop:5,
                         marginHorizontal:10,
                     }}
-                    label='Password'
-                    value={this.state.password}
+                    label='new password'
+                    value={this.state.new_password}
                     secureTextEntry={true}
                     onChangeText={(text)=>{
                         this.setState({
                             ...this.state,
-                            password: text
+                            new_password: text
                         })
                     }}
                 />
@@ -114,21 +94,21 @@ class Login extends Base{
                     }}
                     mode="contained" 
                     onPress={(e)=>{
-                        this.makeLogin();
+                        this.changePass();
                     }}
                 >   
-                   Login
+                   Change
                 </Button>
-                <Text style={{
+                {/* <Text style={{
                     alignSelf:'center',
                     marginTop:40
                 }}
                 onPress={(e)=>{
-                    this.goToSignUp();
+                    
                 }}
                 >
                     Not have account, click now!
-                </Text>
+                </Text> */}
             </View>
         )
     }
@@ -136,7 +116,7 @@ class Login extends Base{
 
 }
 
-export default withTheme(Login)
+export default withTheme(ChangePass)
 const styles = StyleSheet.create({
     container:{
         flex:1,

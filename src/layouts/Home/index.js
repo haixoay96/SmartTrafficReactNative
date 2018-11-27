@@ -6,7 +6,7 @@
 
 import { avatar, direction, menu } from 'images';
 import React from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, AsyncStorage } from 'react-native';
 import Drawer from 'react-native-drawer';
 import MapView from 'react-native-maps';
 import { Actions } from 'react-native-router-flux';
@@ -57,10 +57,16 @@ function ControlPanel(props){
         />
         <Item.Item
           label="Đổi mật khẩu"
+          onPress={(e)=>{
+            Actions.ChangePass({
+              username:props.username
+            });
+          }}
         />
         <Item.Item
           label="Đăng xuất"
           onPress={(e)=>{
+            props.logOut();
             Actions.reset('Login');
           }}
         />
@@ -87,6 +93,10 @@ export default class Home extends Base {
       currentLocation:{
       }
     }
+  }
+  
+  logOut = async ()=>{
+    AsyncStorage.removeItem('username');
   }
   getLocationByID =  (place_id)=>{
     let URL_SEARCH = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${place_id}&key=${GOOGLE_MAPS_APIKEY}`
@@ -252,7 +262,7 @@ export default class Home extends Base {
         tapToClose={true}
         type='static'
         ref={(ref) => this._drawer = ref}
-        content={<ControlPanel username={this.props.username} findPath={this.findPath} />}
+        content={<ControlPanel username={this.props.username} findPath={this.findPath} logOut={this.logOut} />}
       >
         <View style={styles.container}>
           <MapView
