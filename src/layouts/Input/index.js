@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import {View, Text,TextInput,TouchableOpacity ,StyleSheet, FlatList} from 'react-native';
 import Base from '../Base';
 import {Actions} from 'react-native-router-flux';
-
+import {List} from 'react-native-paper';
 const GOOGLE_MAPS_APIKEY = 'AIzaSyCzNOXHaboNOM_cZHNl-SlUNfeK3KJa1xE';
 export default class Input extends Base{
     constructor(props){
@@ -28,23 +28,16 @@ export default class Input extends Base{
     keyExtractor = (item, index) => item.place_id;
     renderItem = (data)=>{
         return(
-            <TouchableOpacity 
-                style={{
-                    padding:5
-                }}
+            <List.Item 
+                title={data.item.description}
                 onPress={(e)=>{
                     Actions.pop();
-                    Actions.refresh({
-                        title:this.props.title,
+                    this.props.callback({
                         value:data.item.description,
                         place_id:data.item.place_id
                     })
                 }}
-            >
-                <Text>
-                    {data.item.description}
-                </Text>
-            </TouchableOpacity>
+            />
         )
     }
     renderContent(){
@@ -59,6 +52,7 @@ export default class Input extends Base{
                         height:40,
 
                     }}
+                    autoFocus={true}
                     onChangeText={(text)=>{
                         this.search(text)
                     }}
@@ -70,17 +64,6 @@ export default class Input extends Base{
                 }}>
                     <FlatList  data={this.state.listComplete} keyExtractor={this.keyExtractor} renderItem={this.renderItem}/>
                 </View>
-                {/* <TouchableOpacity onPress={(e)=>{
-                    let text = this.text;
-                    Actions.pop()
-                    console.log('check', this.props.title, text)
-                    Actions.refresh({
-                        value:text,
-                        title:this.props.title
-                    })
-                }}>
-                    <Text>Test</Text>
-                </TouchableOpacity> */}
             </View>
         )
     }

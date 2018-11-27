@@ -6,27 +6,24 @@ import Base from '../Base';
 export default class FindWay extends Base{
     constructor(props){
         super(props);
-        this.text1='Chọn điểm xuất phát...';
-        this.text2='Chọn điểm đến...';
-        this.place_id1 = '';
-        this.place_id2 = '';
-    }
-    renderContent(){
-        console.log('test',this.props.title, this.props.value, this.props.place_id)
-        if(this.props.title && this.props.value!==''){
-            this.text1 = this.props.title === 'Chọn điểm xuất phát...'?this.props.value:this.text1;
-            this.text2 = this.props.title === 'Chọn điểm đến...'?this.props.value:this.text2;
-            this.place_id1 = this.props.title === 'Chọn điểm xuất phát...'?this.props.place_id:this.place_id1;
-            this.place_id2 = this.props.title === 'Chọn điểm đến...'?this.props.place_id:this.place_id2;
+        this.state = {
+            text1: 'Chọn điểm xuất phát...',
+            text2: 'Chọn điểm đến...',
+            place_id1: '',
+            place_id2: ''
         }
-
-        if(this.place_id1 !=='' && this.place_id2 !==''){
+       
+    }
+    componentDidUpdate(){
+        if(this.state.place_id1 !=='' && this.state.place_id2 !==''){
             Actions.pop();
-            Actions.refresh({
-                place_id1:this.place_id1,
-                place_id2:this.place_id2
+            this.props.callback({
+                place_id1:this.state.place_id1,
+                place_id2:this.state.place_id2
             })
         }
+    }
+    renderContent(){
         return(
             <View>
                 <View style={{
@@ -45,14 +42,19 @@ export default class FindWay extends Base{
                         }}
                         onPress={(e)=>{
                             Actions.Input({
-                                title:'Chọn điểm xuất phát...'
+                                callback:(data)=>{
+                                    this.setState({
+                                        ...this.state,
+                                        text1: data.value,
+                                        place_id1: data.place_id
+                                    })
+                                }
                             })
                         }}
-                        
                         >
                             <Text>
                                 {
-                                    this.text1
+                                    this.state.text1
                                 }
                             </Text>
                         </TouchableOpacity>
@@ -63,31 +65,27 @@ export default class FindWay extends Base{
                         }}
                         onPress={(e)=>{
                             Actions.Input({
-                                title:'Chọn điểm đến...'
+                                callback:(data)=>{
+                                    this.setState({
+                                        ...this.state,
+                                        text2: data.value,
+                                        place_id2: data.place_id
+                                    })
+                                }
                             })
                         }}
                         >
                             <Text>
                                 {
-                                    this.text2
+                                    this.state.text2
                                 }
                             </Text>
                         </TouchableOpacity>
                     </View>
-                    {/* <TouchableOpacity style={{
-                    }}>
-                        <Image 
-                            style={{
-                                height:30,
-                                width:30
-                            }}
-                        source={swap}/>
-                    </TouchableOpacity> */}
                 </View>
                 <View style={{
                     flex:1
                 }}>
-
                 </View>
             </View>
         )

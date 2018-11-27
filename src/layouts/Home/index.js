@@ -12,7 +12,7 @@ import MapView from 'react-native-maps';
 import { Actions } from 'react-native-router-flux';
 import { bottomLeft, bottomRight, HOST, topLeft, topRight } from '../../config';
 import Base from '../Base';
-
+import {Drawer as Item} from 'react-native-paper';
 const origin = {latitude: 21.1096719, longitude: 105.7260039};
 const destination = {latitude: 21.2, longitude: 105.77};
 const GOOGLE_MAPS_APIKEY = 'AIzaSyCzNOXHaboNOM_cZHNl-SlUNfeK3KJa1xE';
@@ -36,56 +36,35 @@ function ControlPanel(props){
       }}>
         {props.username}
       </Text>
-      <View style={{
-        paddingLeft:30
-      }}>
-        <Text 
-          style={{
-            marginTop:50,
-            margin:5,
-            fontSize:20
-          }}
+      <Item.Section>
+        <Item.Item
+          label="Tìm đường"
           onPress={(e)=>{
-          Actions.FindWay()
-        }}>
-          Tìm đường
-        </Text>
-        <Text
-           style={{
-            margin:5,
-            fontSize:20
+            Actions.FindWay({
+              callback: (data)=>{
+                props.findPath(data.place_id1, data.place_id2)
+              }
+            })
           }}
+        />
+        <Item.Item
+          label="Xem lịch sử"
           onPress={(e)=>{
             Actions.History({
               username:props.username
             })
           }}
-        >
-          Xem lịch sử
-        </Text>
-        <Text
-           style={{
-            margin:5,
-            fontSize:20
+        />
+        <Item.Item
+          label="Đổi mật khẩu"
+        />
+        <Item.Item
+          label="Đăng xuất"
+          onPress={(e)=>{
+            Actions.reset('Login');
           }}
-        >
-          Đổi mật khẩu
-        </Text>
-      </View>
-      <Text style={{
-        alignSelf:'center',
-        position:'absolute',
-        bottom:0,
-        padding:20,
-        marginBottom:20
-      }}
-        onPress={(e)=>{
-          Actions.reset('Login');
-        }}
-      >
-        Logout
-      </Text>
-
+        />
+     </Item.Section>
     </View>
   )
 }
@@ -266,11 +245,6 @@ export default class Home extends Base {
     )
 
   }
-  componentWillReceiveProps(nextProps){
-    if(nextProps.place_id1 && nextProps.place_id2){
-      this.findPath(nextProps.place_id1, nextProps.place_id2)
-    }
-  }
   renderContent() {
     return (
       <Drawer
@@ -278,7 +252,7 @@ export default class Home extends Base {
         tapToClose={true}
         type='static'
         ref={(ref) => this._drawer = ref}
-        content={<ControlPanel username={this.props.username}/>}
+        content={<ControlPanel username={this.props.username} findPath={this.findPath} />}
       >
         <View style={styles.container}>
           <MapView
@@ -353,8 +327,11 @@ export default class Home extends Base {
                 justifyContent:'flex-end'
             }}
               onPress={(e)=>{
-                Actions.FindWay()
-               
+                Actions.FindWay({
+                  callback: (data)=>{
+                    this.findPath(data.place_id1, data.place_id2)
+                  }
+                })
               }}
             >
               <Image source={direction} style={{
@@ -365,31 +342,8 @@ export default class Home extends Base {
             </TouchableOpacity>
             {/* <FlatList  data={this.state.listComplete} renderItem={this.renderItem}/> */}
           </View>
-          {/* <TouchableOpacity style={styles.findWay} onPress={(e)=>{
-            alert('Search!')
-            this.findPath(1,150)
-          }} > 
-            <Text>
-              findWay
-            </Text>
-          </TouchableOpacity> */}
-          {/* <Modal
-            visible={this.state.modalVisible}
-            animationType={'slide'}
-            onRequestClose={(e)=>{
-              this.setState({
-                ...this.state,
-                modalVisible:false
-              })
-            }}
-          >
-            <Text>
-              Doing something!
-            </Text>
-          </Modal> */}
         </View>
       </Drawer>
-      
     );
   }
 }
