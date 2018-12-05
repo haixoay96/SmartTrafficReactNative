@@ -34,7 +34,9 @@ class ChangePass extends Base{
                 })
             });
             let data = await result.json();
-            alert(JSON.stringify(data));
+            if(data.status === 1000){
+                alert('successful!')
+            }
         }catch(e){
             alert(JSON.stringify(e));
             console.error(e)
@@ -99,21 +101,9 @@ class ChangePass extends Base{
                 >   
                    Change
                 </Button>
-                {/* <Text style={{
-                    alignSelf:'center',
-                    marginTop:40
-                }}
-                onPress={(e)=>{
-                    
-                }}
-                >
-                    Not have account, click now!
-                </Text> */}
             </View>
         )
     }
-
-
 }
 
 export default withTheme(ChangePass)

@@ -27,8 +27,8 @@ export default class FindWay extends Base{
         return(
             <View>
                 <View style={{
-                    backgroundColor:'#007bff',
-                    height:130
+                    backgroundColor:'#6200ee',
+                    height:150
                 }}>
                     <View style={{
                         marginLeft:50,

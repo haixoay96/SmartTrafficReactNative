@@ -6,7 +6,8 @@
 
 import React, { Component } from 'react';
 import {
-  AsyncStorage
+  AsyncStorage,
+  PermissionsAndroid
 } from 'react-native';
 import {Scene, Router, Reducer, Actions, ActionConst} from 'react-native-router-flux'
 import {Home, Login, SignUp, FindWay, Input, History, ChangePass} from '@layouts'
@@ -19,9 +20,29 @@ const createReducer = params => {
   }
 };
 
-export default class App extends Component {
 
+
+export default class App extends Component {
+  requestCameraPermission = async ()=>{
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          'title': 'Request location',
+          'message': 'You can use location'
+        }
+      )
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("You can use the Location")
+      } else {
+        console.log("Location permission denied")
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+  }
   render(){
+    this.requestCameraPermission()
     return(
       <PaperProvider theme={DefaultTheme} >
         <Router createReducer={createReducer}>

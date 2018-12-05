@@ -80,8 +80,8 @@ export default class Home extends Base {
     super(props)
     this.state = {
       region: {
-        latitude: 21.1096719,
-        longitude: 105.7260039,
+        latitude: 21.094498264,
+        longitude: 105.80392105333334,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       },
@@ -91,7 +91,8 @@ export default class Home extends Base {
       squares:[],
       paths: [],
       currentLocation:{
-      }
+      },
+      list_position: []
     }
   }
   
@@ -107,6 +108,35 @@ export default class Home extends Base {
   }
   componentDidMount(){
     this.getSquares();
+    setInterval(async()=>{
+      let list = this.state.list_position;
+     
+      list.map(async(item)=>{
+        try{
+          let result = await fetch(`${HOST}/location`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({
+              longitude: item.longitude,
+              latitude: item.latitude,
+              username:this.props.username,
+              heading:item.heading,
+              speed:item.speed
+            })
+          });
+        }catch(e){
+
+        }
+      });
+      this.setState({
+        ...this.state,
+        list_position: []
+      });
+    }, 30*1000);
+
     navigator.geolocation.watchPosition(async(position)=>{
       console.log('Watch:',position)
       let latitude = position.coords.latitude;
@@ -116,28 +146,34 @@ export default class Home extends Base {
         currentLocation:{
           latitude:latitude,
           longitude:longitude
-        }
+        },
+        list_position:[...this.state.list_position, {
+          longitude: position.coords.longitude,
+          latitude: position.coords.latitude,
+          heading:position.coords.heading,
+          speed:position.coords.speed
+        }]
       })
-      try{
-        let result = await fetch(`${HOST}/location`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body:JSON.stringify({
-            longitude: position.coords.longitude,
-            latitude: position.coords.latitude,
-            username:this.props.username,
-            heading:position.coords.heading,
-            speed:position.coords.speed
-          })
-        })
-        let data = await result.json()
-        console.log(data);
-      }catch(e){
-        console.error(e);
-      }
+      // try{
+      //   let result = await fetch(`${HOST}/location`, {
+      //     method: 'POST',
+      //     headers: {
+      //       Accept: 'application/json',
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body:JSON.stringify({
+      //       longitude: position.coords.longitude,
+      //       latitude: position.coords.latitude,
+      //       username:this.props.username,
+      //       heading:position.coords.heading,
+      //       speed:position.coords.speed
+      //     })
+      //   });
+      //   let data = await result.json()
+      //   console.log(data);
+      // }catch(e){
+      //   console.error(e);
+      // }
     }, (error)=>{
       console.log('Watch:', error)
 
@@ -292,7 +328,7 @@ export default class Home extends Base {
                         value.bottomRight,
                         value.bottomLeft
                     ]}
-                    fillColor={`rgba(${255}, ${255-(value.count > 10 ?(200+value.count) :value.count)}, 0, 0.2)`}
+                    fillColor={`rgba(${(value.count*5/5)*255 },${255}, 0, 0.8)`}
                   />
                 )
               })
